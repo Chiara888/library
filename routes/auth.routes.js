@@ -95,7 +95,8 @@ router.post("/login", (req, res, next) => {
                 return;
             } else if (bcryptjs.compareSync(password, user.passwordHash)){
                 //login successful
-                res.render("auth/user-profile", user);
+                req.session.currentUser = user; // store info in req.session (will be available in further requests)
+                res.render("auth/user-profile", {userDetails: user});
             } else {
                 //login failed
                 res.status(400).render('auth/login', { errorMessage: 'Incorrect credentials.' });
@@ -109,10 +110,18 @@ router.post("/login", (req, res, next) => {
 });
 
 
+//POST /logout
+router.post("/logout", (req, res, next) => {
+    req.session.destroy(err => {
+        if (err) next(err);
+        res.redirect('/'); // if logout sucessful, redirect to homepage
+    });
+})
+
 
 //GET user-profile
 router.get('/user-profile', (req, res) => {
-    res.render("auth/user-profile");
+    res.render("auth/user-profile", {userDetails: req.session.currentUser});
 });
 
 
